@@ -38,21 +38,6 @@ export const useInventoryStore = defineStore('inventory', () => {
     loading.value = true
     error.value = null
     try {
-      // Check for duplicate serial number
-      if (newItem.numero_serie) {
-        const { data: existingItems, error: fetchError } = await supabase
-          .from('inventario')
-          .select('id')
-          .eq('numero_serie', newItem.numero_serie)
-
-        if (fetchError) throw fetchError
-
-        if (existingItems && existingItems.length > 0) {
-          setNotification('El número de serie ya está registrado.', 'error')
-          return null // Prevent insertion
-        }
-      }
-
       const { data, error: supabaseError } = await supabase
         .from('inventario')
         .insert(newItem)
@@ -62,11 +47,9 @@ export const useInventoryStore = defineStore('inventory', () => {
       if (supabaseError) throw supabaseError
 
       items.value.unshift(data)
-      setNotification('Artículo añadido correctamente.', 'success')
       return data
     } catch (e) {
       error.value = e.message
-      setNotification(`Error al añadir el artículo: ${e.message}`, 'error')
       return null
     } finally {
       loading.value = false
@@ -121,22 +104,6 @@ export const useInventoryStore = defineStore('inventory', () => {
     loading.value = true
     error.value = null
     try {
-      // Check for duplicate serial number for other items
-      if (updates.numero_serie) {
-        const { data: existingItems, error: fetchError } = await supabase
-          .from('inventario')
-          .select('id')
-          .eq('numero_serie', updates.numero_serie)
-          .neq('id', parseInt(id, 10)) // Exclude the current item
-
-        if (fetchError) throw fetchError
-
-        if (existingItems && existingItems.length > 0) {
-          setNotification('El número de serie ya está registrado en otro artículo.', 'error')
-          return null // Prevent update
-        }
-      }
-
       // Remove id and created_at from updates as they should not be updated
       const updatesToSend = { ...updates };
       delete updatesToSend.id;
@@ -161,12 +128,10 @@ export const useInventoryStore = defineStore('inventory', () => {
       if (index !== -1) {
         items.value[index] = updatedItem
       }
-      setNotification('Artículo actualizado correctamente.', 'success')
       return updatedItem
     } catch (e) {
       console.error('Error in updateItem:', e);
       error.value = e.message
-      setNotification(`Error al actualizar el artículo: ${e.message}`, 'error')
       return null
     } finally {
       loading.value = false

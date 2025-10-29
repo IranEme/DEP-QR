@@ -14,7 +14,7 @@
               <font-awesome-icon icon="fa-solid fa-box" class="me-1" /> Inventario
             </router-link>
           </li>
-          <li v-if="isAdmin" class="nav-item">
+          <li class="nav-item">
             <router-link class="nav-link" to="/add">
               <font-awesome-icon icon="fa-solid fa-plus" class="me-1" /> Añadir
             </router-link>
@@ -39,12 +39,10 @@
 
 <script setup>
 import { useRouter } from 'vue-router'
-import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const authStore = useAuthStore()
-const { isAdmin } = storeToRefs(authStore)
 
 async function handleLogout() {
   await authStore.signOut()

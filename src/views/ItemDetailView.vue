@@ -50,7 +50,7 @@ const printLabel = () => {
     const ctx = canvas.getContext('2d')
 
     const canvasWidth = 300
-    const canvasHeight = 280 // Adjusted height to include ID
+    const canvasHeight = 350
     canvas.width = canvasWidth
     canvas.height = canvasHeight
 
@@ -63,6 +63,7 @@ const printLabel = () => {
     ctx.font = '20px Arial'
     ctx.textAlign = 'center'
     ctx.fillText(`ID: ${qrValue.value}`, canvasWidth / 2, 260)
+    ctx.fillText(currentItem.value.nombre_articulo, canvasWidth / 2, 300)
 
     const dataURL = canvas.toDataURL('image/png')
     const link = document.createElement('a')

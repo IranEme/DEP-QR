@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed } from 'vue' // Added ref and computed
 import { RouterLink } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useInventoryStore } from '@/stores/inventory'
@@ -11,7 +11,7 @@ const { items, loading, error, notification } = storeToRefs(inventoryStore)
 const authStore = useAuthStore()
 const { isAdmin } = storeToRefs(authStore)
 
-const searchTerm = ref('')
+const searchTerm = ref('') // New: Reactive search term
 const showSearchInput = ref(false) // New: Control visibility of search input
 
 // New: Computed property for filtered items

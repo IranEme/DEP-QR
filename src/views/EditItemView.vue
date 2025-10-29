@@ -1,6 +1,6 @@
 <script setup>
-import { ref, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useInventoryStore } from '@/stores/inventory'
 import InventoryForm from '@/components/InventoryForm.vue'
@@ -19,36 +19,37 @@ onMounted(() => {
 async function handleUpdateItem(itemData) {
   const updatedItem = await inventoryStore.updateItem(itemId, itemData)
   if (updatedItem) {
-    inventoryStore.setNotification('Cambios guardados correctamente.', 'success')
-    router.push({ name: 'home' })
+    router.push({ name: 'item-detail', params: { id: updatedItem.id } })
   }
 }
 </script>
 
 <template>
   <div class="view-container">
-    
-
-    <div class="card-form">
-      <div v-if="loading && !currentItem" class="text-center">
-        <div class="spinner-border" role="status">
-          <span class="visually-hidden">Cargando...</span>
+    <div class="detail-container">
+      
+      <div class="card-form">
+        <h1 class="page-title text-center">Editar artículo</h1>
+        <div v-if="loading" class="text-center mt-5">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Cargando...</span>
+          </div>
+          <p class="mt-2">Cargando datos del artículo...</p>
         </div>
-        <p class="mt-2">Cargando datos del artículo...</p>
-      </div>
 
-      <div v-if="error" class="alert alert-danger">
-        <p><strong>Ha ocurrido un error.</strong></p>
-        <pre>{{ error }}</pre>
-      </div>
+        <div v-else-if="error || !currentItem" class="alert alert-danger">
+          <p><strong>Error:</strong> No se pudo cargar el artículo.</p>
+          <pre>{{ error || 'El artículo no fue encontrado.' }}</pre>
+        </div>
 
-      <InventoryForm 
-        v-if="currentItem"
-        :initial-data="currentItem" 
-        @submit="handleUpdateItem" 
-        :loading="loading" 
-        button-text="Guardar Cambios"
-      />
+        <InventoryForm
+          v-else
+          @submit="handleUpdateItem"
+          :loading="loading"
+          :initialData="currentItem"
+          button-text="Actualizar Artículo"
+        />
+      </div>
     </div>
   </div>
 </template>
