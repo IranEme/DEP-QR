@@ -10,9 +10,9 @@ import router from './router'
 // Font Awesome setup
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
-import { faBox, faPlus, faQrcode, faSignOutAlt } from '@fortawesome/free-solid-svg-icons'
+import { faBox, faPlus, faQrcode, faSignOutAlt, faSearch, faTimes } from '@fortawesome/free-solid-svg-icons' // Added faSearch, faTimes
 
-library.add(faBox, faPlus, faQrcode, faSignOutAlt)
+library.add(faBox, faPlus, faQrcode, faSignOutAlt, faSearch, faTimes) // Added faSearch, faTimes
 
 const app = createApp(App)
 

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { RouterLink } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useInventoryStore } from '@/stores/inventory'
@@ -10,6 +10,25 @@ const { items, loading, error, notification } = storeToRefs(inventoryStore)
 
 const authStore = useAuthStore()
 const { isAdmin } = storeToRefs(authStore)
+
+const searchTerm = ref('')
+const showSearchInput = ref(false) // New: Control visibility of search input
+
+// New: Computed property for filtered items
+const filteredItems = computed(() => {
+  if (!searchTerm.value) {
+    return items.value
+  }
+  const lowerCaseSearchTerm = searchTerm.value.toLowerCase()
+  return items.value.filter(item => {
+    return (
+      item.nombre_articulo?.toLowerCase().includes(lowerCaseSearchTerm) ||
+      item.modelo?.toLowerCase().includes(lowerCaseSearchTerm) ||
+      item.numero_serie?.toLowerCase().includes(lowerCaseSearchTerm) ||
+      item.numero_importacion?.toLowerCase().includes(lowerCaseSearchTerm)
+    )
+  })
+})
 
 onMounted(() => {
   inventoryStore.fetchItems()
@@ -25,6 +44,13 @@ async function handleDelete(item) {
     }
   }
 }
+
+function toggleSearchInput() {
+  showSearchInput.value = !showSearchInput.value
+  if (!showSearchInput.value) {
+    searchTerm.value = '' // Clear search term when hiding
+  }
+}
 </script>
 
 <template>
@@ -35,7 +61,23 @@ async function handleDelete(item) {
 
     <div class="d-flex justify-content-between align-items-center mb-4">
       <h1 class="page-title">Inventario principal</h1>
-      <RouterLink v-if="isAdmin" to="/add" class="btn btn-primary"><font-awesome-icon icon="fa-solid fa-plus" class="me-1" /> Añadir</RouterLink>
+      <div class="d-flex align-items-center">
+        <!-- New: Search Icon -->
+        <button @click="toggleSearchInput" class="btn btn-outline-secondary me-2">
+          <font-awesome-icon :icon="showSearchInput ? 'fa-solid fa-times' : 'fa-solid fa-search'" />
+        </button>
+        <RouterLink v-if="isAdmin" to="/add" class="btn btn-primary"><font-awesome-icon icon="fa-solid fa-plus" class="me-1" /> Añadir</RouterLink>
+      </div>
+    </div>
+
+    <!-- New: Search Input (conditionally rendered) -->
+    <div v-if="showSearchInput" class="mb-4">
+      <input
+        type="text"
+        class="form-control"
+        placeholder="Buscar por nombre, modelo, número de serie o importación..."
+        v-model="searchTerm"
+      />
     </div>
 
     <div v-if="loading && items.length === 0" class="text-center mt-5">
@@ -69,7 +111,7 @@ async function handleDelete(item) {
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item in items" :key="item.id">
+          <tr v-for="item in filteredItems" :key="item.id">
             <td>{{ item.nombre_articulo }}</td>
             <td>{{ item.modelo }}</td>
             <td>{{ item.numero_serie }}</td>
