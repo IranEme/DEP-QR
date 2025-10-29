@@ -31,7 +31,7 @@ const onScanSuccess = (decodedText, decodedResult) => {
 const onScanFailure = (error) => {
   const errorMessage = typeof error === 'string' ? error : String(error);
 
-  const isQrNotFound = errorMessage.includes('No QR code found') || errorMessage.includes('NotFoundException');
+  const isQrNotFound = errorMessage.includes('No QR code found') || errorMessage.includes('NotFoundException') || errorMessage.includes('No MultiFormat Readers were able to detect the code');
   const isDeprecationWarning = errorMessage.includes('MediaDevices.getUserMedia() is deprecated');
 
   if (!isQrNotFound && !isDeprecationWarning) {
