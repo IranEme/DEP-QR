@@ -38,6 +38,30 @@ export const useInventoryStore = defineStore('inventory', () => {
     loading.value = true
     error.value = null
     try {
+      // Verificar si el número de serie o de importación ya existen
+      const { data: existingItems, error: selectError } = await supabase
+        .from('inventario')
+        .select('numero_serie, numero_importacion')
+        .or(`numero_serie.eq.${newItem.numero_serie},numero_importacion.eq.${newItem.numero_importacion}`)
+
+      if (selectError) {
+        throw selectError
+      }
+
+      if (existingItems && existingItems.length > 0) {
+        const isSerialDuplicate = existingItems.some(item => item.numero_serie === newItem.numero_serie);
+        const isImportDuplicate = existingItems.some(item => item.numero_importacion === newItem.numero_importacion);
+
+        if (isSerialDuplicate) {
+          setNotification('El número de serie ya existe.', 'error');
+          return null;
+        }
+        if (isImportDuplicate) {
+          setNotification('El número de importación ya existe.', 'error');
+          return null;
+        }
+      }
+
       const { data, error: supabaseError } = await supabase
         .from('inventario')
         .insert(newItem)
@@ -47,9 +71,11 @@ export const useInventoryStore = defineStore('inventory', () => {
       if (supabaseError) throw supabaseError
 
       items.value.unshift(data)
+      setNotification('Artículo añadido con éxito.', 'success')
       return data
     } catch (e) {
       error.value = e.message
+      setNotification(`Error al añadir el artículo: ${e.message}`, 'error')
       return null
     } finally {
       loading.value = false
@@ -104,6 +130,30 @@ export const useInventoryStore = defineStore('inventory', () => {
     loading.value = true
     error.value = null
     try {
+      // Verificar si el número de serie o de importación ya existen en otro registro
+      const { data: existingItems, error: selectError } = await supabase
+        .from('inventario')
+        .select('id, numero_serie, numero_importacion')
+        .or(`numero_serie.eq.${updates.numero_serie},numero_importacion.eq.${updates.numero_importacion}`)
+
+      if (selectError) {
+        throw selectError
+      }
+
+      if (existingItems && existingItems.length > 0) {
+        const isSerialDuplicate = existingItems.some(item => item.numero_serie === updates.numero_serie && item.id !== id);
+        const isImportDuplicate = existingItems.some(item => item.numero_importacion === updates.numero_importacion && item.id !== id);
+
+        if (isSerialDuplicate) {
+          setNotification('El número de serie ya existe en otro artículo.', 'error');
+          return null;
+        }
+        if (isImportDuplicate) {
+          setNotification('El número de importación ya existe en otro artículo.', 'error');
+          return null;
+        }
+      }
+
       // Remove id and created_at from updates as they should not be updated
       const updatesToSend = { ...updates };
       delete updatesToSend.id;
@@ -128,10 +178,12 @@ export const useInventoryStore = defineStore('inventory', () => {
       if (index !== -1) {
         items.value[index] = updatedItem
       }
+      setNotification('Artículo actualizado con éxito.', 'success');
       return updatedItem
     } catch (e) {
       console.error('Error in updateItem:', e);
       error.value = e.message
+      setNotification(`Error al actualizar el artículo: ${e.message}`, 'error');
       return null
     } finally {
       loading.value = false

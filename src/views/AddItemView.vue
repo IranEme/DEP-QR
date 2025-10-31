@@ -9,12 +9,12 @@ const router = useRouter()
 const inventoryStore = useInventoryStore()
 const authStore = useAuthStore()
 
-const { loading, error } = storeToRefs(inventoryStore)
+const { loading, error, notification } = storeToRefs(inventoryStore)
 const { user } = storeToRefs(authStore)
 
 async function handleAddItem(itemData) {
   if (!user.value) {
-    alert('No se pudo obtener la información del usuario. Por favor, intenta de nuevo.')
+    inventoryStore.setNotification('No se pudo obtener la información del usuario. Por favor, intenta de nuevo.', 'error');
     return
   }
 
@@ -35,6 +35,9 @@ async function handleAddItem(itemData) {
     <div class="detail-container">
       <h1 class="page-title text-center">Añadir artículo</h1>
       <div class="card-form">
+        <div v-if="notification" :class="`alert alert-${notification.type}`">
+          {{ notification.message }}
+        </div>
         <div v-if="error" class="alert alert-danger">
           <p><strong>Ha ocurrido un error al guardar el artículo.</strong></p>
           <pre>{{ error }}</pre>
@@ -61,5 +64,9 @@ async function handleAddItem(itemData) {
 
 .page-title {
   margin-bottom: 2rem !important;
+}
+
+.alert {
+  margin-bottom: 1rem;
 }
 </style>

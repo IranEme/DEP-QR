@@ -9,7 +9,7 @@ const route = useRoute()
 const router = useRouter()
 const inventoryStore = useInventoryStore()
 
-const { currentItem, loading, error } = storeToRefs(inventoryStore)
+const { currentItem, loading, error, notification } = storeToRefs(inventoryStore)
 const itemId = route.params.id
 
 onMounted(() => {
@@ -30,6 +30,9 @@ async function handleUpdateItem(itemData) {
       
       <div class="card-form">
         <h1 class="page-title text-center">Editar artículo</h1>
+        <div v-if="notification" :class="`alert alert-${notification.type}`">
+          {{ notification.message }}
+        </div>
         <div v-if="loading" class="text-center mt-5">
           <div class="spinner-border" role="status">
             <span class="visually-hidden">Cargando...</span>
