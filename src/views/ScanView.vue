@@ -29,12 +29,18 @@ const onScanSuccess = (decodedText, decodedResult) => {
 }
 
 const onScanFailure = (error) => {
+  // In production, don't show any scan errors to the user to avoid showing the "No MultiFormat Readers" error.
+  if (import.meta.env.PROD) {
+    return;
+  }
+
   const errorMessage = typeof error === 'string' ? error : String(error);
 
   const isQrNotFound = errorMessage.includes('No QR code found') || errorMessage.includes('NotFoundException');
   const isDeprecationWarning = errorMessage.includes('MediaDevices.getUserMedia() is deprecated');
+  const isMultiFormatReaderError = errorMessage.includes('No MultiFormat Readers were able to detect the code');
 
-  if (!isQrNotFound && !isDeprecationWarning) {
+  if (!isQrNotFound && !isDeprecationWarning && !isMultiFormatReaderError) {
     scanError.value = errorMessage;
   }
 }
