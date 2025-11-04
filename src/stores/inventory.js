@@ -130,27 +130,40 @@ export const useInventoryStore = defineStore('inventory', () => {
     loading.value = true
     error.value = null
     try {
-      // Verificar si el número de serie o de importación ya existen en otro registro
-      const { data: existingItems, error: selectError } = await supabase
-        .from('inventario')
-        .select('id, numero_serie, numero_importacion')
-        .or(`numero_serie.eq.${updates.numero_serie},numero_importacion.eq.${updates.numero_importacion}`)
-
-      if (selectError) {
-        throw selectError
+      // Construir una lista de filtros para la consulta OR
+      const orFilters = [];
+      if (updates.numero_serie) {
+        orFilters.push(`numero_serie.eq.${updates.numero_serie}`);
+      }
+      if (updates.numero_importacion) {
+        orFilters.push(`numero_importacion.eq.${updates.numero_importacion}`);
       }
 
-      if (existingItems && existingItems.length > 0) {
-        const isSerialDuplicate = existingItems.some(item => item.numero_serie === updates.numero_serie && item.id !== id);
-        const isImportDuplicate = existingItems.some(item => item.numero_importacion === updates.numero_importacion && item.id !== id);
+      // Solo ejecutar la verificación si hay algo que verificar
+      if (orFilters.length > 0) {
+        const { data: existingItems, error: selectError } = await supabase
+          .from('inventario')
+          .select('id, numero_serie, numero_importacion')
+          .neq('id', parseInt(id, 10)) // Excluir el artículo actual
+          .or(orFilters.join(','));
 
-        if (isSerialDuplicate) {
-          setNotification('El número de serie ya existe en otro artículo.', 'error');
-          return null;
+        if (selectError) {
+          throw selectError;
         }
-        if (isImportDuplicate) {
-          setNotification('El número de importación ya existe en otro artículo.', 'error');
-          return null;
+
+        if (existingItems && existingItems.length > 0) {
+          // Cualquier artículo encontrado es un duplicado en otro registro
+          const isSerialDuplicate = existingItems.some(item => item.numero_serie === updates.numero_serie);
+          const isImportDuplicate = existingItems.some(item => item.numero_importacion === updates.numero_importacion);
+
+          if (isSerialDuplicate) {
+            setNotification('El número de serie ya existe en otro artículo.', 'error');
+            return null;
+          }
+          if (isImportDuplicate) {
+            setNotification('El número de importación ya existe en otro artículo.', 'error');
+            return null;
+          }
         }
       }
 
